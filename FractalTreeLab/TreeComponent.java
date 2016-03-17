@@ -1,40 +1,96 @@
+//********************************************************************
+//  KochPanel.java       Author: Lewis/Loftus/Cocking
+//
+//  Represents a drawing surface on which to paint a Koch Snowflake.
+//********************************************************************
 
+import java.awt.*;
+import javax.swing.JPanel;
 
-/**
- * Write a description of class TreeComponent here.
- * 
- * @author (your name) 
- * @version (a version number or a date)
- */
-public class TreeComponent
+public class TreeComponent extends JPanel
 {
-    /** description of instance variable x (add comment for each instance variable) */
-    private int x;
+   private final int PANEL_WIDTH = 400;
+   private final int PANEL_HEIGHT = 400;
 
-    /**
-     * Default constructor for objects of class TreeComponent
-     */
-    public TreeComponent()
-    {
-        // initialise instance variables
-        x = 0;
-    }
+   private final double SQ = Math.sqrt(3.0) / 6;
 
-    /**
-     * An example of a method - replace this comment with your own
-     *    that describes the operation of the method
-     *
-     * @pre        preconditions for the method
-     *            (what the method assumes about the method's parameters and class's state)
-     * @post    postconditions for the method
-     *            (what the method guarantees upon completion)
-     * @param    y    description of parameter y
-     * @return    description of the return value
-     */
-    public int sampleMethod(int y)
-    {
-        // put your code here
-        return x+y;
-    }
+   private final int TOPX = 200, TOPY = 20;
+   private final int LEFTX = 60, LEFTY = 300;
+   private final int RIGHTX = 340, RIGHTY = 300;
 
+   private int current; //current order
+
+   //-----------------------------------------------------------------
+   //  Sets the initial fractal order to the value specified.
+   //-----------------------------------------------------------------
+   public KochPanel (int currentOrder)
+   {
+      current = currentOrder;
+      setBackground (Color.black);
+      setPreferredSize (new Dimension(PANEL_WIDTH, PANEL_HEIGHT));
+   }
+
+   //-----------------------------------------------------------------
+   //  Draws the fractal recursively. Base case is an order of 1 for
+   //  which a simple straight line is drawn. Otherwise three
+   //  intermediate points are computed, and each line segment is
+   //  drawn as a fractal.
+   //-----------------------------------------------------------------
+   public void drawFractal (int order, int x1, int y1, int x5, int y5,
+                            Graphics page)
+   {
+      int deltaX, deltaY, x2, y2, x3, y3, x4, y4;
+
+      if (order == 1)
+         page.drawLine (x1, y1, x5, y5);
+      else
+      {
+         deltaX = x5 - x1;  // distance between end points
+         deltaY = y5 - y1;
+
+         x2 = x1 + deltaX / 3;  // one third
+         y2 = y1 + deltaY / 3;
+
+         x3 = (int) ((x1+x5)/2 + SQ * (y1-y5));  // tip of projection
+         y3 = (int) ((y1+y5)/2 + SQ * (x5-x1));
+
+         x4 = x1 + deltaX * 2/3;  // two thirds
+         y4 = y1 + deltaY * 2/3;
+
+         drawFractal (order-1, x1, y1, x2, y2, page);
+         drawFractal (order-1, x2, y2, x3, y3, page);
+         drawFractal (order-1, x3, y3, x4, y4, page);
+         drawFractal (order-1, x4, y4, x5, y5, page);
+      }
+   }
+
+   //-----------------------------------------------------------------
+   //  Performs the initial calls to the drawFractal method.
+   //-----------------------------------------------------------------
+   public void paintComponent (Graphics page)
+   {
+      super.paintComponent (page);
+
+      page.setColor (Color.green);
+
+      drawFractal (current, TOPX, TOPY, LEFTX, LEFTY, page);
+      drawFractal (current, LEFTX, LEFTY, RIGHTX, RIGHTY, page);
+      drawFractal (current, RIGHTX, RIGHTY, TOPX, TOPY, page);
+   }
+
+   //-----------------------------------------------------------------
+   //  Sets the fractal order to the value specified.
+   //-----------------------------------------------------------------
+   public void setOrder (int order)
+   {
+      current = order;
+   }
+
+   //-----------------------------------------------------------------
+   //  Returns the current order.
+   //-----------------------------------------------------------------
+   public int getOrder ()
+   {
+      return current;
+   }
 }
